@@ -23,9 +23,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions -DUSE_MODPLUG -DDATAPATH=\\
 include_directories(
   ${VITASDK}/arm-vita-eabi/include/SDL
   ${CMAKE_SOURCE_DIR}/src
+  ${CMAKE_SOURCE_DIR}/vitashaderlibs/vita2d_fbo/includes/
+  ${CMAKE_SOURCE_DIR}/vitashaderlibs/vita-shader-collection/includes/
 )
 
 link_directories(
+  ${CMAKE_SOURCE_DIR}/vitashaderlibs/vita2d_fbo/lib/
+  ${CMAKE_SOURCE_DIR}/vitashaderlibs/vita-shader-collection/lib/
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
@@ -82,12 +86,14 @@ add_executable(${VITA_APPNAME}
   src/main.cpp
   src/setup.cpp
   src/util.cpp
+  src/io/gfx/psp2_shader.c
 )
 
 target_link_libraries(${VITA_APPNAME}
   SDL
   modplug
   vita2d
+  vitashaders
   z
   SceAudio_stub
   SceCtrl_stub

@@ -30,6 +30,10 @@
 
 #include "paletteeffects.h"
 #include "video.h"
+#ifdef __vita__
+#include "psp2_shader.h"
+vita2d_shader *shader = NULL;
+#endif
 
 #ifdef SCALE
 	#include "io/gfx/scale2x/scalebit.h"
@@ -193,11 +197,21 @@ bool Video::reset (int width, int height) {
 #endif
 
 #ifdef __vita__
+	//Enable sharp-bilinear-simple shader for sharp pixels without distortion.
+	shader = setPSP2Shader(SHARP_BILINEAR_SIMPLE);
+
 	mainScreen = SDL_SetVideoMode(screenW * 2, screenH * 2, 16, FULLSCREEN_FLAGS);
 	int sh = VITA_SCREEN_HEIGHT;
 	int sw = (float)mainScreen->w * ((float)sh / (float)mainScreen->h);
 	int x = (VITA_SCREEN_WIDTH - sw) / 2;
 	SDL_SetVideoModeScaling(x, 0, sw, sh);
+
+	// For the sharp_bilinear_simple shader to work, linear filtering has to be enabled.
+	//This requires a recent SDL-Vita branch SDL12 for example
+	//https://github.com/rsn8887/SDL-Vita/tree/SDL12
+	//to compile
+	SDL_SetVideoModeBilinear(1);
+
 	screen = SDL_SetVideoMode(SW, SH, 8, FULLSCREEN_FLAGS);
 #elif defined(NO_RESIZE)
 	screen = SDL_SetVideoMode(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, 8, FULLSCREEN_FLAGS);
