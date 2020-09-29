@@ -18,10 +18,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  * @par Description:
  * Deals with the running of setup menus.
  *
@@ -138,7 +134,7 @@ int SetupMenu::setupKeyboard () {
 int SetupMenu::setupJoystick () {
 
 	const char *options[PCONTROLS] = {"up", "down", "left", "right", "jump", "swim up", "fire", "weapon"};
-	int progress, control, x, y, count;
+	int progress, control, direction, x, y, count;
 
 	progress = 0;
 
@@ -166,7 +162,7 @@ int SetupMenu::setupJoystick () {
 					controls.setButton(progress, control & 0xFF);
 					progress++;
 
-					if (progress == 7) {
+					if (progress == PCONTROLS) {
 
 						// If all controls have been assigned, return
 
@@ -196,7 +192,7 @@ int SetupMenu::setupJoystick () {
 					controls.setAxis(progress, control & 0xFF, false);
 					progress++;
 
-					if (progress == 7) {
+					if (progress == PCONTROLS) {
 
 						// If all controls have been assigned, return
 
@@ -226,7 +222,48 @@ int SetupMenu::setupJoystick () {
 					controls.setAxis(progress, control & 0xFF, true);
 					progress++;
 
-					if (progress == 7) {
+					if (progress == PCONTROLS) {
+
+						// If all controls have been assigned, return
+
+						playSound(S_ORB);
+
+						return E_NONE;
+
+					}
+
+				}
+
+				break;
+
+			case JOYSTICKHUP:
+			case JOYSTICKHLFT:
+			case JOYSTICKHRHT:
+			case JOYSTICKHDWN:
+
+				direction = 0;
+				switch(control & 0xF00) {
+					case JOYSTICKHUP:  direction = SDL_HAT_UP;    break;
+					case JOYSTICKHLFT: direction = SDL_HAT_LEFT;  break;
+					case JOYSTICKHRHT: direction = SDL_HAT_RIGHT; break;
+					case JOYSTICKHDWN: direction = SDL_HAT_DOWN;  break;
+				}
+
+				// If this is a navigation controls (up, down, or enter),
+				// make sure it's not the same as other navigation controls
+
+				if (((progress != C_UP) &&
+					(progress != C_DOWN) &&
+					(progress != C_ENTER)) ||
+					((controls.getHat(progress) == (control & 0xFF)) && (controls.getHatDirection(progress) == direction)) ||
+					(((controls.getHat(C_UP) != (control & 0xFF)) || (controls.getHatDirection(C_UP) != direction)) &&
+					((controls.getHat(C_DOWN) != (control & 0xFF)) || (controls.getHatDirection(C_DOWN) != direction)) &&
+					((controls.getHat(C_ENTER) != (control & 0xFF)) || (controls.getHatDirection(C_ENTER) != direction)))) {
+
+					controls.setHat(progress, control & 0xFF, direction);
+					progress++;
+
+					if (progress == PCONTROLS) {
 
 						// If all controls have been assigned, return
 
@@ -253,7 +290,7 @@ int SetupMenu::setupJoystick () {
 
 		video.clearScreen(0);
 
-		for (count = 0; count < 7; count++) {
+		for (count = 0; count < PCONTROLS; count++) {
 
 			if (count < progress)
 				fontmn2->showString("okay", (canvasW >> 2) + 176, (canvasH >> 1) + (count << 4) - 56);
@@ -646,7 +683,7 @@ int SetupMenu::setupMain () {
 
 			case 1:
 
-#if !defined(CAANOO) && !defined(WIZ) && !defined(GP2X) && !defined(PSP) && !defined(__vita__)
+#if !(defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(PSP) || defined(_3DS) || defined(__vita__))
 				if (setupKeyboard() == E_QUIT) return E_QUIT;
 #else
 				if (message("FEATURE NOT AVAILABLE") == E_QUIT) return E_QUIT;

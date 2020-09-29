@@ -17,10 +17,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  * @par Description:
  * Deals with the running of the menus used to create a new game.
  *
@@ -169,7 +165,7 @@ int GameMenu::playNewGame (GameModeType mode, char* firstLevel) {
 
 	delete game;
 
-	if (ret != E_QUIT) playMusic("menusng.psm");
+	if (ret != E_QUIT) playMusic("MENUSNG.PSM");
 
 	switch (ret) {
 
@@ -665,7 +661,7 @@ int GameMenu::joinGame () {
 
 	delete game;
 
-	if (ret != E_QUIT) playMusic("menusng.psm");
+	if (ret != E_QUIT) playMusic("MENUSNG.PSM");
 
 	switch (ret) {
 

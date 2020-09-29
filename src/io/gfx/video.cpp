@@ -18,10 +18,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  * @par Description:
  * Contains graphics utility functions.
  *
@@ -32,7 +28,7 @@
 #include "video.h"
 
 #ifdef SCALE
-	#include "io/gfx/scale2x/scalebit.h"
+	#include <scalebit.h>
 #endif
 
 #include "util.h"
@@ -363,7 +359,7 @@ bool Video::init (int width, int height, bool startFullscreen) {
 
 	}
 
-	SDL_WM_SetCaption("OpenJazz", NULL);
+	setTitle(NULL);
 
 	findMaxResolution();
 
@@ -494,7 +490,7 @@ void Video::setPalette (SDL_Color *palette) {
 
 	// Make palette changes invisible until the next draw. Hopefully.
 	clearScreen(SDL_MapRGB(screen->format, 0, 0, 0));
-	flip(0, NULL);
+	flip(0);
 
 	SDL_SetPalette(screen, SDL_PHYSPAL, palette, 0, 256);
 	currentPalette = palette;
@@ -590,6 +586,41 @@ int Video::getWidth () {
 int Video::getHeight () {
 
 	return screenH;
+
+}
+
+
+/**
+ * Sets the window title.
+ *
+ * @param the title or NULL, to use default
+ */
+void Video::setTitle (const char *title) {
+
+	const char titleBase[] = "OpenJazz";
+	char *windowTitle = NULL;
+	int titleLen = strlen(titleBase) + 1;
+
+	if (title != NULL) {
+
+		titleLen = strlen(titleBase) + 3 + strlen(title) + 1;
+
+	}
+
+	windowTitle = new char[titleLen];
+
+	strcpy(windowTitle, titleBase);
+
+	if (title != NULL) {
+
+		strcat(windowTitle, " - ");
+		strcat(windowTitle, title);
+
+	}
+
+	SDL_WM_SetCaption(windowTitle, NULL);
+
+	delete[] windowTitle;
 
 }
 
@@ -713,8 +744,9 @@ void Video::update (SDL_Event *event) {
  *
  * @param mspf Ticks per frame
  * @param paletteEffects Palette effects to use
+ * @param effectsStopped Whether the effects should be applied without advancing
  */
-void Video::flip (int mspf, PaletteEffect* paletteEffects) {
+void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) {
 
 	SDL_Color shownPalette[256];
 
@@ -742,13 +774,13 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects) {
 
 			memcpy(shownPalette, currentPalette, sizeof(SDL_Color) * 256);
 
-			paletteEffects->apply(shownPalette, false, mspf);
+			paletteEffects->apply(shownPalette, false, mspf, effectsStopped);
 
 			SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
 
 		} else {
 
-			paletteEffects->apply(shownPalette, true, mspf);
+			paletteEffects->apply(shownPalette, true, mspf, effectsStopped);
 
 		}
 
@@ -769,9 +801,11 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects) {
  */
 void Video::clearScreen (int index) {
 
-#if defined(CAANOO) || defined(WIZ) || defined(GP2X)
+#if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(GAMESHELL)
 	// always 240 lines cleared to black
 	memset(video.screen->pixels, index, 320*240);
+#elif defined (_3DS)
+	memset(video.screen->pixels, index, 400*240);
 #else
 	SDL_FillRect(canvas, NULL, index);
 #endif

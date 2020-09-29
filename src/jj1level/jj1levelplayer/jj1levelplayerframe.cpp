@@ -23,10 +23,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  * @par Description:
  * Provides the once-per-frame functions of players in levels.
  *
@@ -97,6 +93,31 @@ void JJ1LevelPlayer::ground () {
 
 
 /**
+ * Tries to switch ammo to specific type, with fallback
+ *
+ * @param type Type
+ * @param fallback Whether to go backwards in weapon list
+ */
+void JJ1LevelPlayer::changeAmmo (int type, bool fallback) {
+
+	// Type 3 is unknown, skip it and use TNT instead
+
+	if (type == 3) player->ammoType = 4;
+	else player->ammoType = type;
+
+	// If there is no ammo of this type, go to the next type that has ammo
+
+	while ((player->ammoType > -1) && !player->ammo[player->ammoType]) {
+
+		if (fallback) player->ammoType--;
+		else player->ammoType = ((player->ammoType + 2) % 6) - 1;
+
+	}
+
+}
+
+
+/**
  * Respond to controls, unless the player has been killed.
  *
  * @param ticks Time
@@ -105,6 +126,7 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 
 	fixed speed;
 	bool platform;
+	int count;
 
 
 	// If the player has been killed, drop but otherwise do not move
@@ -318,7 +340,7 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 
 			eventType = JJ1PE_NONE;
 
-			playSound(9);
+			playSound(S_PHOTON);
 
 		} else if (((eventType == JJ1PE_NONE) || (eventType == JJ1PE_PLATFORM)) &&
 			!player->pcontrols[C_JUMP]) {
@@ -444,9 +466,18 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 
 			}
 
-			// Set when the next bullet can be fired
-			if (player->fireSpeed) fireTime = ticks + (1000 / player->fireSpeed);
-			else fireTime = 0x7FFFFFFF;
+			// Set when the next bullet can be fired and length of shoot animation
+			if (player->fireSpeed) {
+
+				fireTime = ticks + (1000 / player->fireSpeed);
+				fireAnimTime = ticks + 1000;
+
+			} else {
+
+				fireTime = 0x7FFFFFFF;
+				fireAnimTime = ticks + T_FIRING;
+
+			}
 
 			// Remove the bullet from the arsenal
 			if (player->ammoType != -1) player->ammo[player->ammoType]--;
@@ -465,11 +496,18 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 
 		if (player == localPlayer) controls.release(C_CHANGE);
 
-		player->ammoType = ((player->ammoType + 2) % 6) - 1;
+		changeAmmo(((player->ammoType + 2) % 6) - 1);
 
-		// If there is no ammo of this type, go to the next type that has ammo
-		while ((player->ammoType > -1) && !player->ammo[player->ammoType])
-			player->ammoType = ((player->ammoType + 2) % 6) - 1;
+	}
+	for (count = 0; count < 5; count++) {
+
+		if (controls.getState(count + C_BLASTER)) {
+
+			if (player == localPlayer) controls.release(count + C_BLASTER);
+
+			changeAmmo(count - 1, true);
+
+		}
 
 	}
 
@@ -477,6 +515,11 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 	// Deal with the bird
 
 	if (birds) birds = birds->step(ticks);
+
+	// Replay sound effect before invincibility wears off
+
+	if ((reaction == PR_INVINCIBLE) && (reactionTime < ticks + 2200))
+		if (!isSoundPlaying(S_INVULN)) playSound(S_INVULN);
 
 
 	return;
@@ -510,6 +553,11 @@ void JJ1LevelPlayer::move (unsigned int ticks) {
 
 		pdx = (udx * 3) >> 7;
 		pdy = (dy * 3) >> 7;
+
+		// reset music speed before running shoes wear off
+
+		if (fastFeetTime - ticks < T_FASTFEET >> 2)
+			setMusicTempo(MUSIC_NORMAL);
 
 	} else {
 
@@ -748,15 +796,8 @@ void JJ1LevelPlayer::move (unsigned int ticks) {
 			else if ((udx > 0) && !facing) animType = PA_RSTOP;
 			else animType = facing? PA_RWALK: PA_LWALK;
 
-		} else if (!level->checkMaskDown(x + PXO_ML, y + F20) &&
-			!level->checkMaskDown(x + PXO_L, y + F2) &&
-			(eventType != JJ1PE_PLATFORM))
-			animType = PA_LEDGE;
-
-		else if (!level->checkMaskDown(x + PXO_MR, y + F20) &&
-			!level->checkMaskDown(x + PXO_R, y + F2) &&
-			(eventType != JJ1PE_PLATFORM))
-			animType = PA_REDGE;
+		} else if ((player->pcontrols[C_FIRE]) && (ticks < fireAnimTime))
+			animType = facing? PA_RSHOOT: PA_LSHOOT;
 
 		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
 			animType = PA_LOOKUP;
@@ -768,8 +809,15 @@ void JJ1LevelPlayer::move (unsigned int ticks) {
 
 		}
 
-		else if (player->pcontrols[C_FIRE])
-			animType = facing? PA_RSHOOT: PA_LSHOOT;
+		else if (!level->checkMaskDown(x + PXO_ML, y + F20) &&
+			!level->checkMaskDown(x + PXO_L, y + F2) &&
+			(eventType != JJ1PE_PLATFORM))
+			animType = facing? PA_RSTAND: PA_LEDGE;
+
+		else if (!level->checkMaskDown(x + PXO_MR, y + F20) &&
+			!level->checkMaskDown(x + PXO_R, y + F2) &&
+			(eventType != JJ1PE_PLATFORM))
+			animType = facing? PA_REDGE: PA_LSTAND;
 
 		else
 			animType = facing? PA_RSTAND: PA_LSTAND;
@@ -844,6 +892,7 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 	int frame;
 	fixed drawX, drawY;
 	fixed xOffset, yOffset;
+	fixed angle;
 
 	// The current frame for animations
 	if (reaction == PR_KILLED) frame = (ticks + PRT_KILLED - reactionTime) / 75;
@@ -938,18 +987,46 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 
 		// Show the 4-hit shield
 
-		xOffset = fCos(ticks) * 20;
-		yOffset = fSin(ticks) * 20;
+		an = level->getMiscAnim(MA_4SHIELD);
 
-		an = level->getAnim(59);
+		if (shield == 4) {
 
-		an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
+			// triangle based
 
-		if (shield > 2) an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);
+			for (int i = 0; i < 3; i++) {
 
-		if (shield > 3) an->draw(drawX + yOffset, drawY + PYO_TOP - xOffset);
+				angle = -(i * 341 + ticks);
 
-		if (shield > 4) an->draw(drawX - yOffset, drawY + PYO_TOP + xOffset);
+				xOffset = fSin(angle) * 20;
+				yOffset = fCos(angle) * 20;
+
+				if (!facing) yOffset = -yOffset;
+
+				an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
+
+			}
+
+		} else {
+
+			// rectangle based
+
+			xOffset = fCos(ticks) * 20;
+			yOffset = fSin(ticks) * 20;
+
+			if (!facing) yOffset = -yOffset;
+
+			an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
+
+			if (shield > 2) an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);
+
+			if (shield > 4) {
+
+				an->draw(drawX + yOffset, drawY + PYO_TOP - xOffset);
+				an->draw(drawX - yOffset, drawY + PYO_TOP + xOffset);
+
+			}
+
+		}
 
 	} else if (shield) {
 
@@ -958,7 +1035,9 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 		xOffset = fCos(ticks) * 20;
 		yOffset = fSin(ticks) * 20;
 
-		an = level->getAnim(50);
+		an = level->getMiscAnim(MA_1SHIELD);
+
+		if (!facing) yOffset = -yOffset;
 
 		an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
 		an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);
@@ -979,5 +1058,3 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 	return;
 
 }
-
-

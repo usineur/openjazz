@@ -17,10 +17,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  */
 
 
@@ -34,10 +30,10 @@
 // Macros
 
 // For converting between tile positions and int/fixed values
-#define FTOT(x) ((x) >> 15)
-#define TTOF(x) ((x) << 15)
-#define ITOT(x) ((x) >> 5)
-#define TTOI(x) ((x) << 5)
+#define FTOT(x) ((x) >> 15) ///< Fixed to Tile
+#define TTOF(x) ((x) << 15) ///< Tile to Fixed
+#define ITOT(x) ((x) >> 5)  ///< Int to Tile
+#define TTOI(x) ((x) << 5)  ///< Tile to Int
 
 
 // Constants

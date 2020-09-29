@@ -20,10 +20,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  * @par Description:
  * Deals with the loading and playing of demo levels.
  *
@@ -39,6 +35,7 @@
 #include "io/file.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
+#include "io/sound.h"
 #include "loop.h"
 #include "util.h"
 
@@ -68,7 +65,12 @@ JJ1DemoLevel::JJ1DemoLevel (Game* owner, const char* fileName) : JJ1Level(owner)
 	}
 
 	// Check this is a normal level
-	if (file->loadShort() == 0) throw E_DEMOTYPE;
+	if (file->loadShort() == 0) {
+
+		delete file;
+		throw E_DEMOTYPE;
+
+	}
 
 	// Level file to load
 	lNum = file->loadShort(9);
@@ -79,6 +81,8 @@ JJ1DemoLevel::JJ1DemoLevel (Game* owner, const char* fileName) : JJ1Level(owner)
 	file->loadShort();
 
 	macro = file->loadBlock(1024);
+
+	delete file;
 
 	// Load level data
 
@@ -121,6 +125,8 @@ int JJ1DemoLevel::play () {
 	steps = 0;
 
 	video.setPalette(palette);
+
+	playMusic(musicFile);
 
 	while (true) {
 

@@ -18,10 +18,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  */
 
 
@@ -69,6 +65,7 @@
 // Other time periods
 #define T_FASTFEET 25000
 #define T_WARP     1000
+#define T_FIRING   150
 
 // Player offsets
 #define PXO_MID F16
@@ -146,8 +143,9 @@ class JJ1LevelPlayer : public LevelPlayer {
 		JJ1PlayerEvent    eventType; ///< Event type
 		int               lookTime; ///< Negative if looking up, positive if looking down, 0 if neither
 		JJ1PlayerReaction reaction; ///< Reaction type
-		unsigned int      reactionTime; ///< Time reaction will end
+		unsigned int      reactionTime; ///< Time the reaction will end
 		unsigned int      fireTime; ///< The next time the player can fire
+		unsigned int      fireAnimTime; ///< Time the firing animation will end
 		fixed             jumpHeight; ///< The height the player can reach when jumping
 		fixed             targetY; ///< Having been propelled, the y-coordinate the player could reach
 		unsigned int      fastFeetTime; ///< Time fast feet will expire
@@ -190,6 +188,7 @@ class JJ1LevelPlayer : public LevelPlayer {
 		void           send        (unsigned char* buffer);
 		void           receive     (unsigned char* buffer);
 
+		void           changeAmmo  (int type, bool fallback = false);
 		void           control     (unsigned int ticks);
 		void           move        (unsigned int ticks);
 		void           view        (unsigned int ticks, int mspf, int change);

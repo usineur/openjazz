@@ -21,10 +21,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  * @par Description:
  * Deals with the creation and destruction of players in levels, and their
  * interactions with other level objects.
@@ -165,6 +161,8 @@ void JJ1LevelPlayer::reset (int startX, int startY) {
 	targetY = TTOF(LH);
 	fastFeetTime = 0;
 	warpTime = 0;
+	fireTime = 0;
+	fireAnimTime = 0;
 
 	return;
 
@@ -336,7 +334,7 @@ bool JJ1LevelPlayer::hit (Player *source, unsigned int ticks) {
 
 	}
 
-	playSound(7);
+	playSound(S_UPLOOP);
 
 	if (energy) {
 
@@ -472,7 +470,7 @@ bool JJ1LevelPlayer::takeEvent (JJ1EventType* event, unsigned char gridX, unsign
 
 			if (energy) level->setNext(event->multiA, event->multiB);
 
-			// The lack of a break statement is intentional
+			// FALLTHROUGH
 
 		case 8: // Boss
 		case 27: // End of level
@@ -542,6 +540,7 @@ bool JJ1LevelPlayer::takeEvent (JJ1EventType* event, unsigned char gridX, unsign
 		case 12: // Rapid fire
 
 			player->fireSpeed++;
+			fireTime = 0;
 
 			break;
 
@@ -584,6 +583,13 @@ bool JJ1LevelPlayer::takeEvent (JJ1EventType* event, unsigned char gridX, unsign
 		case 26: // Fast feet box
 
 			fastFeetTime = ticks + T_FASTFEET;
+
+			// Sky blue flash
+			level->flash(135, 206, 235, 320);
+
+			// Speed up music
+
+			setMusicTempo(MUSIC_FAST);
 
 			break;
 

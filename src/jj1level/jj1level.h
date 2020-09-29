@@ -20,10 +20,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  */
 
 
@@ -75,8 +71,8 @@
 #define PA_RBOARD   17
 #define PA_LSTAND   18
 #define PA_RSTAND   19
-#define PA_LEAT     20
-#define PA_REAT     21
+#define PA_LBORED   20
+#define PA_RBORED   21
 #define PA_LEDGE    22
 #define PA_REDGE    23
 #define PA_LOOKUP   24
@@ -87,23 +83,28 @@
 #define PA_RRUN     29
 #define PA_LDIE     30
 #define PA_RDIE     31
-#define PA_LSTOP    32
-#define PA_RSTOP    33
-#define PA_LHALT    34 /* Yeah, I was wondering the same thing... */
-#define PA_RHALT    35
+#define PA_LSUCK    32
+#define PA_RSUCK    33
+#define PA_LSTOP    34 /* SUCK and STOP refer almost always to the same animation */
+#define PA_RSTOP    35
 #define PA_RSPRING  36
 #define PA_LSPRING  37 /* Surely these are the wrong way round? */
 
 #define JJ1PANIMS   38 /* Number of player animations. May be higher. */
 
 // Miscellaneous animations
-#define MA_SPARKLE   0
-#define MA_DEVHEAD   1
-#define MA_EXPLOSION 2
-#define MA_LBOARD    4
-#define MA_RBOARD    5
-
-#define JJ1MANIMS    6
+#define MA_SPARKLE    0
+#define MA_DEVHEAD    1
+#define MA_EXPLOSION1 2
+#define MA_EXPLOSION2 3
+#define MA_4SHIELD    4
+#define MA_LBOARD     5
+#define MA_RBOARD     6
+#define MA_LBIRD      7
+#define MA_RBIRD      8
+#define MA_ICY        9
+#define MA_1SHIELD    10
+#define JJ1MANIMS     11
 
 // Black palette index
 #define LEVEL_BLACK 31
@@ -176,7 +177,6 @@ class JJ1Level : public Level {
 		SDL_Surface*  panelAmmo[6]; ///< HUD ammo type images
 		JJ1Event*     events; ///< Active events
 		JJ1Bullet*    bullets; ///< Active bullets
-		char*         musicFile; ///< Music file name
 		char*         sceneFile; ///< File name of cutscene to play when level has been completed
 		Sprite*       spriteSet; ///< Sprites
 		Anim          animSet[ANIMS]; ///< Animations
@@ -210,6 +210,7 @@ class JJ1Level : public Level {
 
 	protected:
 		Font* font; ///< On-screen message font
+		char* musicFile; ///< Music file name
 
 		JJ1Level (Game* owner);
 

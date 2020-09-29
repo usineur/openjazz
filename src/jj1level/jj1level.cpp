@@ -27,10 +27,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  * @par Description:
  * Deals with the creating, playing and freeing of levels.
  *
@@ -146,6 +142,8 @@ JJ1Level::~JJ1Level () {
 	delete font;
 
 	resampleSounds();
+
+	video.setTitle(NULL);
 
 	return;
 
@@ -769,28 +767,33 @@ int JJ1Level::play () {
 		// Check if level has been won
 		if (game && returnTime && (ticks > returnTime)) {
 
+			// Play "Level cleared" cutscene when changing worlds
+
+			if (nextWorldNum != worldNum) {
+
+				if (playScene(sceneFile) == E_QUIT) return E_QUIT;
+
+				ret = game->setLevel(NULL);
+
+				if (ret < 0) return ret;
+
+			}
+
 			if (!multiplayer) {
 
 				// If the gem has been collected, play the bonus level
+
 				ret = playBonus();
 
 				if (ret < 0) return ret;
 
 			}
 
-			if (nextLevelNum == 99) {
+			// Advance to next level
 
-				if (playScene(sceneFile) == E_QUIT) return E_QUIT;
-
-				ret = game->setLevel(NULL);
-
-			} else {
-
-				string = createFileName("LEVEL", nextLevelNum, nextWorldNum);
-				ret = game->setLevel(string);
-				delete[] string;
-
-			}
+			string = createFileName("LEVEL", nextLevelNum, nextWorldNum);
+			ret = game->setLevel(string);
+			delete[] string;
 
 			if (ret < 0) return ret;
 
@@ -867,7 +870,7 @@ int JJ1Level::play () {
 
 					returnTime = ticks + T_END;
 					paletteEffects = new WhiteOutPaletteEffect(T_END, paletteEffects);
-					playSound(11);
+					playSound(S_ORB);
 
 				}
 

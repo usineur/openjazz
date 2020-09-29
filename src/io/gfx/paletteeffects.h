@@ -16,20 +16,15 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  */
 
 
 #ifndef _PALETTE_H
 #define _PALETTE_H
 
-
 #include "OpenJazz.h"
 
-#include <SDL/SDL.h>
+#include <SDL.h>
 
 
 // Constants
@@ -58,7 +53,7 @@ class PaletteEffect {
 		PaletteEffect          (PaletteEffect* nextPE);
 		virtual ~PaletteEffect ();
 
-		virtual void apply (SDL_Color* shownPalette, bool direct, int mspf);
+		virtual void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
 
 };
 
@@ -72,7 +67,7 @@ class WhiteInPaletteEffect : public PaletteEffect {
 	public:
 		WhiteInPaletteEffect (int newDuration, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
 
 };
 
@@ -86,7 +81,7 @@ class FadeInPaletteEffect : public PaletteEffect {
 	public:
 		FadeInPaletteEffect (int newDuration, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
 
 };
 
@@ -100,7 +95,7 @@ class WhiteOutPaletteEffect : public PaletteEffect {
 	public:
 		WhiteOutPaletteEffect (int newDuration, PaletteEffect* nextPE);
 
-		void apply  (SDL_Color* shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
 
 };
 
@@ -114,7 +109,7 @@ class FadeOutPaletteEffect : public PaletteEffect {
 	public:
 		FadeOutPaletteEffect (int newDuration, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
 
 };
 
@@ -129,7 +124,7 @@ class FlashPaletteEffect : public PaletteEffect {
 	public:
 		FlashPaletteEffect (unsigned char newRed, unsigned char newGreen, unsigned char newBlue, int newDuration, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
 
 };
 
@@ -145,7 +140,7 @@ class RotatePaletteEffect : public PaletteEffect {
 	public:
 		RotatePaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
 
 };
 
@@ -161,7 +156,7 @@ class SkyPaletteEffect : public PaletteEffect {
 	public:
 		SkyPaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, SDL_Color* newSkyPalette, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
 
 };
 
@@ -176,7 +171,7 @@ class P2DPaletteEffect : public PaletteEffect {
 	public:
 		P2DPaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
 
 };
 
@@ -191,7 +186,7 @@ class P1DPaletteEffect : public PaletteEffect {
 	public:
 		P1DPaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
 
 };
 
@@ -204,11 +199,8 @@ class WaterPaletteEffect : public PaletteEffect {
 	public:
 		WaterPaletteEffect (fixed newDepth, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
 
 };
 
-
 #endif
-
-

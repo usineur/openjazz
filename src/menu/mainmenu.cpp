@@ -17,10 +17,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  * @par Description:
  * Deals with the running of the main menu and its generic sub-menus.
  *
@@ -56,15 +52,16 @@ MainMenu::MainMenu () {
 
 		file = new File("openjazz.000", false);
 
+		logo = file->loadSurface(64, 40);
+
+		delete file;
+
 	} catch (int e) {
 
-		throw e;
+		logo = NULL;
 
 	}
 
-	logo = file->loadSurface(64, 40);
-
-	delete file;
 
 
 	// Load the menu graphics
@@ -75,13 +72,13 @@ MainMenu::MainMenu () {
 
 	} catch (int e) {
 
-		SDL_FreeSurface(logo);
+		if (logo) SDL_FreeSurface(logo);
 
 		throw e;
 
 	}
 
-
+	// only available in Holiday Hare 94/95
 	if (file->getSize() > 200000) {
 
 		time(&currentTime);
@@ -119,7 +116,7 @@ MainMenu::MainMenu () {
 
 	SDL_SetColorKey(background, SDL_SRCCOLORKEY, 0);
 	SDL_SetColorKey(highlight, SDL_SRCCOLORKEY, 0);
-	SDL_SetColorKey(logo, SDL_SRCCOLORKEY, 28);
+	if (logo) SDL_SetColorKey(logo, SDL_SRCCOLORKEY, 28);
 
 	gameMenu = new GameMenu(file);
 
@@ -137,7 +134,7 @@ MainMenu::~MainMenu () {
 
 	SDL_FreeSurface(background);
 	SDL_FreeSurface(highlight);
-	SDL_FreeSurface(logo);
+	if (logo) SDL_FreeSurface(logo);
 
 	delete gameMenu;
 
@@ -272,7 +269,7 @@ int MainMenu::main () {
 
 	video.setPalette(palette);
 
-	playMusic("menusng.psm");
+	playMusic("MENUSNG.PSM");
 
 
 	// Demo timeout
@@ -407,7 +404,7 @@ int MainMenu::main () {
 
 				delete game;
 
-				playMusic("menusng.psm");
+				playMusic("MENUSNG.PSM");
 
 				// Restore the main menu palette
 				video.setPalette(palette);
@@ -427,9 +424,12 @@ int MainMenu::main () {
 		plasma.draw();
 
 
-		dst.x = (canvasW >> 2) - 72;
-		dst.y = canvasH - (canvasH >> 2);
-		SDL_BlitSurface(logo, NULL, canvas, &dst);
+		if (logo)
+		{
+			dst.x = (canvasW >> 2) - 72;
+			dst.y = canvasH - (canvasH >> 2);
+			SDL_BlitSurface(logo, NULL, canvas, &dst);
+		}
 
 		dst.x = (canvasW - SW) >> 1;
 		dst.y = (canvasH - SH) >> 1;

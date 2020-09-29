@@ -20,10 +20,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  * @par Description:
  * Deals with functionality common to ordinary levels and bonus levels.
  *
@@ -293,6 +289,14 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 
 		for (count = 0; count < 6; count++) {
 
+			// Gray out Save and Load options, as they are unimplemented
+
+			if (count == 2 || count == 3) {
+
+				drawRect((canvasW >> 2) - 4, (canvasH >> 1) + (count << 4) - 48, 136, 15, textPalIndex);
+
+			}
+
 			if (count == option) fontmn2->mapPalette(240, 8, selectedTextPalIndex, textPalSpan);
 			else fontmn2->mapPalette(240, 8, textPalIndex, textPalSpan);
 
@@ -327,6 +331,8 @@ int Level::select (bool& menu, int option) {
 
 			menu = false;
 
+			break;
+
 		case 1: // Change difficulty
 
 			if (!multiplayer) game->setDifficulty((game->getDifficulty() + 1) & 3);
@@ -335,9 +341,11 @@ int Level::select (bool& menu, int option) {
 
 		case 2: // Save
 
-			break;
+			// FALLTHROUGH
 
 		case 3: // Load
+
+			playSound(S_WAIT);
 
 			break;
 
@@ -393,7 +401,7 @@ int Level::loop (bool& menu, int& option, bool& message) {
 
 
 	// Main loop
-	if (::loop(NORMAL_LOOP, paletteEffects) == E_QUIT) return E_QUIT;
+	if (::loop(NORMAL_LOOP, paletteEffects, paused) == E_QUIT) return E_QUIT;
 
 
 	if (controls.release(C_ESCAPE)) {

@@ -19,10 +19,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  * @par Description:
  * Contains the main function.
  *
@@ -59,17 +55,20 @@
 	#include <imgui_vita.h>
 #elif defined(_3DS)
 	#include <3ds.h>
+	#include "platforms/3ds.h"
+#elif defined(WII)
+	#include <unistd.h>
+	#include <fat.h>
+	#include "platforms/wii.h"
 #elif defined(__HAIKU__)
 	#include <Alert.h>
 	#include <FindDirectory.h>
 	#include <fs_info.h>
+#elif defined(WIZ) || defined(GP2X)
+	#include "platforms/wiz.h"
 #endif
 
 #include <string.h>
-
-#if defined(WIZ) || defined(GP2X)
-	#include "platforms/wiz.h"
-#endif
 
 #ifdef __SYMBIAN32__
 extern char KOpenJazzPath[256];
@@ -140,6 +139,10 @@ void startUp (int argc, char *argv[]) {
 	firstPath = new Path(firstPath, createString(KOpenJazzPath));
 #endif
 
+#ifdef _3DS
+	firstPath = new Path(firstPath, createString("sdmc:/3ds/OpenJazz/"));
+	firstPath = new Path(firstPath, createString("romfs:/"));
+#endif
 
 	// Use any provided paths, appending a directory separator as necessary
 
@@ -169,23 +172,28 @@ void startUp (int argc, char *argv[]) {
 	}
 
 
-	// Use the path of the program
+	// Use the path of the program, but check before, since it is not always available
+	// At least crashes in Dolphin emulator (Wii) and 3DS (.cia build)
 
-	count = strlen(argv[0]) - 1;
+	if (argc > 0) {
 
-	// Search for directory separator
+		count = strlen(argv[0]) - 1;
+
+		// Search for directory separator
 #ifdef _WIN32
-	while ((argv[0][count] != '\\') && (count >= 0)) count--;
+		while ((argv[0][count] != '\\') && (count >= 0)) count--;
 #else
-	while ((argv[0][count] != '/') && (count >= 0)) count--;
+		while ((argv[0][count] != '/') && (count >= 0)) count--;
 #endif
 
-	// If a directory was found, copy it to the path
-	if (count > 0) {
+		// If a directory was found, copy it to the path
+		if (count > 0) {
 
-		firstPath = new Path(firstPath, new char[count + 2]);
-		memcpy(firstPath->path, argv[0], count + 1);
-		firstPath->path[count + 1] = 0;
+			firstPath = new Path(firstPath, new char[count + 2]);
+			memcpy(firstPath->path, argv[0], count + 1);
+			firstPath->path[count + 1] = 0;
+
+		}
 
 	}
 
@@ -403,6 +411,10 @@ int play () {
 	MainMenu *mainMenu = NULL;
 	JJ1Scene *scene = NULL;
 
+	// Start the opening music
+
+	playMusic("MENUSNG.PSM");
+
 	// Load and play the startup cutscene
 
 	try {
@@ -478,10 +490,11 @@ int play () {
  *
  * @param type Type of loop. Normal, typing, or input configuration
  * @param paletteEffects Palette effects to apply to video output
+ * @param effectsStopped Whether the effects should be applied without advancing
  *
  * @return Error code
  */
-int loop (LoopType type, PaletteEffect* paletteEffects) {
+int loop (LoopType type, PaletteEffect* paletteEffects, bool effectsStopped) {
 
 	SDL_Event event;
 	int prevTicks, ret;
@@ -500,7 +513,7 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
 	}
 
 	// Show what has been drawn
-	video.flip(globalTicks - prevTicks, paletteEffects);
+	video.flip(globalTicks - prevTicks, paletteEffects, effectsStopped);
 
 
 	// Process system events
@@ -562,14 +575,23 @@ int main(int argc, char *argv[]) {
 
 	int ret;
 
+	// Early platform init
+
 #ifdef PSP
 	pspDebugScreenInit();
 	atexit(sceKernelExitGame);
 	sceIoChdir("ms0:/PSP/GAME/OpenJazz");
+#elif defined(WII)
+	fatInitDefault();
+	Wii_SetConsole();
+#elif defined(_3DS)
+	romfsInit();
+	N3DS_SetKeyMap();
 #elif __vita__
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
 	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
 #endif
+
 	// Initialise SDL
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {
@@ -604,6 +626,10 @@ int main(int argc, char *argv[]) {
 	// Save configuration and shut down
 
 	shutDown();
+
+#ifdef _3DS
+	romfsExit();
+#endif
 
 	SDL_Quit();
 

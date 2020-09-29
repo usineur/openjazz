@@ -22,10 +22,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  * @par Description:
  * Provides the once-per-frame functions of ordinary events.
  *
@@ -70,7 +66,7 @@ JJ1StandardEvent::JJ1StandardEvent (JJ1EventType* event, unsigned char gX, unsig
 		case 4: // Walk from side to side and down hills
 
 			setAnimType(E_LEFTANIM);
-			onlyRAnimOffset = true;
+			onlyLAnimOffset = true;
 
 			break;
 
@@ -99,7 +95,7 @@ JJ1StandardEvent::JJ1StandardEvent (JJ1EventType* event, unsigned char gX, unsig
 		case 26: // Flip animation
 
 			setAnimType(E_RIGHTANIM);
-			onlyLAnimOffset = true;
+			onlyRAnimOffset = true;
 
 			break;
 
@@ -1148,7 +1144,7 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 	// If the event has been destroyed, draw an explosion
 	if (set->strength && ((animType & ~1) == E_LFINISHANIM)) {
 
-		miscAnim = level->getMiscAnim(MA_EXPLOSION);
+		miscAnim = level->getMiscAnim(MA_EXPLOSION1);
 		miscAnim->setFrame((ticks - level->getEventTime(gridX, gridY)) >> 3, false);
 		miscAnim->draw(changeX, changeY);
 

@@ -27,10 +27,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  */
 
 
@@ -92,15 +88,15 @@
 // Macros
 
 // For fixed-point operations
-#define FTOI(x) ((x) >> 10)
-#define ITOF(x) ((x) << 10)
-#define MUL(x, y) (((x) * (y)) >> 10)
-#define DIV(x, y) (((x) << 10) / (y))
+#define FTOI(x) ((x) >> 10) ///< Fixed to Int
+#define ITOF(x) ((x) << 10) ///< Int to Fixed
+#define MUL(x, y) (((x) * (y)) >> 10) ///< multiplication
+#define DIV(x, y) (((x) << 10) / (y)) ///< division
 
 
 // Datatype
 
-typedef int fixed;
+typedef int fixed; ///< Custom fixed-point data type
 
 #endif
 

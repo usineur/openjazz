@@ -22,6 +22,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions -DUSE_MODPLUG -DDATAPATH=\\
 
 include_directories(
   ${VITASDK}/arm-vita-eabi/include/SDL
+  ${CMAKE_SOURCE_DIR}/ext/miniz
+  ${CMAKE_SOURCE_DIR}/ext/psmplug
   ${CMAKE_SOURCE_DIR}/src
 )
 
@@ -31,6 +33,15 @@ link_directories(
 
 # Builds
 add_executable(${VITA_APPNAME}
+  ext/miniz/miniz.cpp
+  ext/psmplug/fastmix.cpp
+  ext/psmplug/load_psm.cpp
+  ext/psmplug/psmplug.cpp
+  ext/psmplug/snd_dsp.cpp
+  ext/psmplug/sndfile.cpp
+  ext/psmplug/snd_flt.cpp
+  ext/psmplug/snd_fx.cpp
+  ext/psmplug/sndmix.cpp
   src/game/clientgame.cpp
   src/game/game.cpp
   src/game/gamemode.cpp
@@ -86,11 +97,14 @@ add_executable(${VITA_APPNAME}
 
 target_link_libraries(${VITA_APPNAME}
   SDL
-  vitaGL
   imgui
+  vitaGL
+  vitashark
+  mathneon
   modplug
   kbdvita
   z
+  SceAppMgr_stub
   SceAppUtil_stub
   SceAudio_stub
   SceCommonDialog_stub
@@ -99,6 +113,7 @@ target_link_libraries(${VITA_APPNAME}
   SceGxm_stub
   SceHid_stub
   ScePower_stub
+  SceShaccCg_stub
   SceSysmodule_stub
   SceTouch_stub
 )

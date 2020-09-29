@@ -17,10 +17,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  */
 
 
@@ -451,11 +447,11 @@ int ClientGame::step (unsigned int ticks) {
 
 						// If necessary, move more recent players
 						for (count = recvBuffer[2]; count < nPlayers; count++)
-							memcpy(players + count, players + count + 1,
+							memcpy(static_cast<void*>(players + count), players + count + 1,
 								sizeof(Player));
 
 						// Clear duplicate pointers
-						memset(players + nPlayers, 0, sizeof(Player));
+						memset(static_cast<void*>(players + nPlayers), 0, sizeof(Player));
 
 					}
 

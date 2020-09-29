@@ -16,10 +16,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  */
 
 #ifndef _VIDEO_H
@@ -28,7 +24,7 @@
 
 #include "paletteeffects.h"
 
-#include <SDL/SDL.h>
+#include <SDL.h>
 
 
 // Constants
@@ -50,7 +46,7 @@
 
 #define WINDOWED_FLAGS (SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
 
-#if defined(CAANOO) || defined(WIZ) || defined(GP2X)
+#if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(GAMESHELL)
 	#define DEFAULT_SCREEN_WIDTH 320
 	#define DEFAULT_SCREEN_HEIGHT 240
 
@@ -82,6 +78,14 @@
 	#define NO_RESIZE
 
 	#define FULLSCREEN_FLAGS (SDL_SWSURFACE | SDL_TOPSCR | SDL_CONSOLEBOTTOM)
+#elif defined(WII)
+	#define DEFAULT_SCREEN_WIDTH 640
+	#define DEFAULT_SCREEN_HEIGHT 480
+
+	#define FULLSCREEN_ONLY
+	#define NO_RESIZE
+
+	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE)
 #elif defined(__vita__)
 	#define DEFAULT_SCREEN_WIDTH 320
 	#define DEFAULT_SCREEN_HEIGHT 200
@@ -133,7 +137,7 @@ class Video {
 
 		bool       init                  (int width, int height, bool startFullscreen);
 
-		bool       reset                (int width, int height);
+		bool       reset                 (int width, int height);
 
 		void       setPalette            (SDL_Color *palette);
 		SDL_Color* getPalette            ();
@@ -144,6 +148,7 @@ class Video {
 		int        getMaxHeight          ();
 		int        getWidth              ();
 		int        getHeight             ();
+		void       setTitle              (const char *title);
 #ifdef SCALE
 		int        getScaleFactor        ();
 		int        setScaleFactor        (int newScaleFactor);
@@ -153,7 +158,7 @@ class Video {
 #endif
 
 		void       update                (SDL_Event *event);
-		void       flip                  (int mspf, PaletteEffect* paletteEffects);
+		void       flip                  (int mspf, PaletteEffect* paletteEffects = NULL, bool effectsStopped = false);
 
 		void       clearScreen           (int index);
 

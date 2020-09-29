@@ -15,10 +15,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  */
 
 
@@ -28,7 +24,7 @@
 
 #include "OpenJazz.h"
 
-#include <SDL/SDL.h>
+#include <SDL.h>
 #include <stdio.h>
 
 
@@ -55,8 +51,8 @@ class File {
 		unsigned short int loadShort   ();
 		unsigned short int loadShort   (unsigned short int max);
 		void               storeShort  (unsigned short int val);
-		signed long int    loadInt     ();
-		void               storeInt    (signed long int val);
+		signed int         loadInt     ();
+		void               storeInt    (signed int val);
 		unsigned char*     loadBlock   (int length);
 		unsigned char*     loadRLE     (int length);
 		void               skipRLE     ();
@@ -84,8 +80,7 @@ class Path {
 
 // Variable
 
-// Paths to files
-EXTERN Path* firstPath;
+EXTERN Path* firstPath; ///< Paths to files
 
 #endif
 

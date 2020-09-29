@@ -17,10 +17,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  * @par Description:
  * Deals with files.
  *
@@ -33,9 +29,9 @@
 #include "util.h"
 
 #include <string.h>
-#include <zlib.h>
+#include <miniz.h>
 
-#ifndef _WIN32
+#if !(defined(_WIN32) || defined(WII) || defined(PSP) || defined(_3DS))
     #define UPPERCASE_FILENAMES
     #define LOWERCASE_FILENAMES
 #endif
@@ -273,29 +269,29 @@ void File::storeShort (unsigned short int val) {
 
 
 /**
- * Load a signed long int from the file.
+ * Load a signed int from the file.
  *
  * @return The value read
  */
-signed long int File::loadInt () {
+signed int File::loadInt () {
 
-	unsigned long int val;
+	unsigned int val;
 
 	val = fgetc(file);
 	val += fgetc(file) << 8;
 	val += fgetc(file) << 16;
 	val += fgetc(file) << 24;
 
-	return *((signed long int *)&val);
+	return *((signed int *)&val);
 
 }
 
 
-void File::storeInt (signed long int val) {
+void File::storeInt (signed int val) {
 
-	unsigned long int uval;
+	unsigned int uval;
 
-	uval = *((unsigned long int *)&val);
+	uval = *((unsigned int *)&val);
 
 	fputc(uval & 255, file);
 	fputc((uval >> 8) & 255, file);

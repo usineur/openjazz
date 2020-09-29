@@ -1,13 +1,56 @@
-AM_CPPFLAGS = -DUSE_SOCKETS -DSCALE -I${top_srcdir}/src \
-              ${SDL_CFLAGS} ${LIBMODPLUG_CFLAGS} ${LIBXMP_CFLAGS} ${ZLIB_CFLAGS}
-AM_CFLAGS   = -Wall
-AM_CXXFLAGS = -Wall
-
 dist_pkgdata_DATA = openjazz.000
-EXTRA_DIST = gpl.txt licenses.txt README.md
 
-bin_PROGRAMS = openjazz
-openjazz_SOURCES = \
+desktopdir = $(datadir)/applications
+dist_desktop_DATA = unix/OpenJazz.desktop
+appicondir = $(datadir)/icons/hicolor/scalable/apps
+dist_appicon_DATA = unix/OpenJazz.svg
+appicon_fallbackdir = $(datadir)/icons/hicolor/48x48/apps
+dist_appicon_fallback_DATA = unix/OpenJazz.png
+
+noinst_LIBRARIES = libpsmplug.a libminiz.a libscale2x.a
+libpsmplug_a_SOURCES = \
+	ext/psmplug/fastmix.cpp \
+	ext/psmplug/load_psm.cpp \
+	ext/psmplug/psmplug.cpp \
+	ext/psmplug/psmplug.h \
+	ext/psmplug/snd_dsp.cpp \
+	ext/psmplug/sndfile.cpp \
+	ext/psmplug/sndfile.h \
+	ext/psmplug/snd_flt.cpp \
+	ext/psmplug/snd_fx.cpp \
+	ext/psmplug/sndmix.cpp \
+	ext/psmplug/stdafx.h \
+	ext/psmplug/tables.h
+libminiz_a_SOURCES = \
+	ext/miniz/miniz.cpp \
+	ext/miniz/miniz.h
+libscale2x_a_SOURCES = \
+	ext/scale2x/scale2x.cpp \
+	ext/scale2x/scale2x.h \
+	ext/scale2x/scale3x.cpp \
+	ext/scale2x/scale3x.h \
+	ext/scale2x/scalebit.cpp \
+	ext/scale2x/scalebit.h \
+	ext/scale2x/simple2x.cpp
+
+bin_PROGRAMS = OpenJazz
+OpenJazz_CPPFLAGS = \
+	-I${srcdir}/src \
+	-DSCALE \
+	-I${srcdir}/ext/scale2x \
+	-I${srcdir}/ext/psmplug \
+	-I${srcdir}/ext/miniz
+OpenJazz_CXXFLAGS = \
+	${HOST_CFLAGS} \
+	${SDL_CFLAGS}
+OpenJazz_LDADD = \
+	${SDL_LIBS} \
+	libpsmplug.a \
+	libminiz.a \
+	libscale2x.a \
+	${NET_LIBS} \
+	${HOST_LIBS}
+OpenJazz_SOURCES = \
 	src/game/clientgame.cpp \
 	src/game/game.cpp \
 	src/game/game.h \
@@ -25,17 +68,6 @@ openjazz_SOURCES = \
 	src/io/gfx/font.h \
 	src/io/gfx/paletteeffects.cpp \
 	src/io/gfx/paletteeffects.h \
-	src/io/gfx/scale2x/getopt.cpp \
-	src/io/gfx/scale2x/pixel.cpp \
-	src/io/gfx/scale2x/pixel.h \
-	src/io/gfx/scale2x/portable.h \
-	src/io/gfx/scale2x/scale2x.cpp \
-	src/io/gfx/scale2x/scale2x.h \
-	src/io/gfx/scale2x/scale3x.cpp \
-	src/io/gfx/scale2x/scale3x.h \
-	src/io/gfx/scale2x/scalebit.cpp \
-	src/io/gfx/scale2x/scalebit.h \
-	src/io/gfx/scale2x/simple2x.cpp \
 	src/io/gfx/sprite.cpp \
 	src/io/gfx/sprite.h \
 	src/io/gfx/video.cpp \
@@ -98,6 +130,10 @@ openjazz_SOURCES = \
 	src/menu/plasma.h \
 	src/menu/setupmenu.cpp \
 	src/OpenJazz.h \
+	src/platforms/wii.cpp \
+	src/platforms/wii.h \
+	src/platforms/wiz.cpp \
+	src/platforms/wiz.h \
 	src/player/player.cpp \
 	src/player/player.h \
 	src/setup.cpp \
@@ -105,4 +141,84 @@ openjazz_SOURCES = \
 	src/util.cpp \
 	src/util.h
 
-openjazz_LDADD = ${SDL_LIBS} ${LIBMODPLUG_LIBS} ${LIBXMP_LIBS} ${ZLIB_LIBS} ${NET_LIBS}
+if HAVE_POD2MAN
+
+unix/OpenJazz.6: unix/OpenJazz.6.pod
+	$(AM_V_GEN)$(POD2MAN) -c "OpenJazz Manual" -n OpenJazz -r "OpenJazz $(PACKAGE_VERSION)" $< $@
+
+dist_man6_MANS = unix/OpenJazz.6
+MOSTLYCLEANFILES = unix/OpenJazz.6
+
+else
+
+if HAVE_MANUAL
+
+dist_man6_MANS = unix/OpenJazz.6
+
+endif
+
+endif
+
+if OJ_WII
+
+OpenJazz_CPPFLAGS += -DUSE_SDL_NET
+
+wii/boot.dol: OpenJazz$(EXEEXT)
+	$(AM_V_GEN) elf2dol $< $@
+
+all-local: wii/boot.dol
+
+clean-local:
+	-rm -f wii/boot.dol
+
+else
+
+OpenJazz_CPPFLAGS += -DUSE_SOCKETS
+
+endif
+
+if OJ_RISCOS
+
+riscos/!OpenJazz/OpenJazz,ff8: OpenJazz$(EXEEXT)
+	$(AM_V_GEN) elf2aif $< $@
+
+all-local: riscos/!OpenJazz/OpenJazz,ff8
+
+clean-local:
+	$(RM) riscos/!OpenJazz/OpenJazz,ff8
+
+endif
+
+if OJ_MINGW
+
+.rc.o:
+	@if ! $(AM_V_P); then echo "  RC       $@"; fi
+	$(AM_V_at)$(WINDRES) -o $@ $<
+
+OpenJazz_SOURCES += windows/OpenJazz.rc
+
+endif
+
+EXTRA_DIST = \
+	licenses.txt \
+	README.md \
+	ext/miniz/LICENSE \
+	ext/psmplug/LICENSE \
+	ext/scale2x/COPYING \
+	doc/Doxyfile \
+	doc/OpenJazz.png \
+	wii/icon.png \
+	wii/meta.xml \
+	wii/READMII.txt \
+	riscos/!OpenJazz/!Run,feb \
+	riscos/!OpenJazz/!Boot,feb \
+	riscos/!OpenJazz/!Sprites,ff9 \
+	windows/OpenJazz.ico \
+	windows/OpenJazz.rc \
+	unix/OpenJazz.6.pod \
+	psp/Makefile \
+	psp/icon.png \
+	3ds/Makefile \
+	3ds/OpenJazz.png \
+	src/platforms/3ds.cpp \
+	src/platforms/3ds.h

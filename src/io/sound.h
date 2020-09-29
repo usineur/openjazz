@@ -15,10 +15,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  */
 
 #ifndef _SOUND_H
@@ -53,7 +49,9 @@
 #define S_STOP    20
 #define S_BLOCK   21
 
-#define MAX_VOLUME 100
+#define MAX_VOLUME   100
+#define MUSIC_NORMAL   0
+#define MUSIC_FAST     1
 
 
 // Datatype
@@ -94,16 +92,19 @@ EXTERN int volume_direction;
 
 EXTERN void openAudio      ();
 EXTERN void closeAudio     ();
-EXTERN void playMusic      (const char *fileName);
+EXTERN void playMusic      (const char *fileName, bool restart = false);
 EXTERN void pauseMusic     (bool pause);
 EXTERN void stopMusic      ();
 EXTERN int  getMusicVolume ();
 EXTERN void setMusicVolume (int volume);
+EXTERN int  getMusicTempo  ();
+EXTERN void setMusicTempo  (int tempo);
 EXTERN int  loadSounds     (const char *fileName);
-EXTERN void resampleSound  (char index, const char* name, int rate);
+EXTERN void resampleSound  (int index, const char* name, int rate);
 EXTERN void resampleSounds ();
 EXTERN void freeSounds     ();
 EXTERN void playSound      (char index);
+EXTERN bool isSoundPlaying (char index);
 EXTERN int  getSoundVolume ();
 EXTERN void setSoundVolume (int volume);
 

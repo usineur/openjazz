@@ -15,10 +15,6 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  */
 
 
@@ -35,6 +31,10 @@
 #define JOYSTICKB    0x100
 #define JOYSTICKANEG 0x200
 #define JOYSTICKAPOS 0x300
+#define JOYSTICKHUP  0x400
+#define JOYSTICKHLFT 0x500
+#define JOYSTICKHRHT 0x600
+#define JOYSTICKHDWN 0x700
 
 
 // Variable
@@ -57,7 +57,7 @@ enum LoopType {
 
 // Function in main.cpp
 
-EXTERN int loop (LoopType type, PaletteEffect* paletteEffects = NULL);
+EXTERN int loop (LoopType type, PaletteEffect* paletteEffects = NULL, bool effectsStopped = false);
 
 #endif
 
